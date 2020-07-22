@@ -17,7 +17,7 @@ class Kierunki(Enum):
   STOP = 9
 
 class Atom:
-  def __init__(promien, n, predkosc):
+  def __init__(self, promien, n, predkosc):
     self.masa = 1
     self.promien = promien
     self.polozenie = [randint(0, n * promien), randint(0, n * promien)]
@@ -48,7 +48,7 @@ class Atom:
     return STOP
 
 class Zbiornik:
-  def __init__(liczba_atomow, promien, n):
+  def __init__(self, liczba_atomow, promien, n):
     self.atomy = [ Atom(promien) for x in range(0, liczba_atomow) ]
     self.h = n * promien
     self.l = n * promien
