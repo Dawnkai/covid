@@ -1,10 +1,13 @@
-# Projekt Fizyka dla Informatyków Grupowy 1
+# Atom Infection Simulator
 
-### Język : Python
-### GUI : Tkinter
+### Language : Python
+### GUI : Pygame
 
-Autorzy:
-* Cubaster
-* DawnKai
+Basic simulator for atom collision - based on CoVid pandemic.
+Graphically presented using [Pygame](https://www.pygame.org/news).
+
+Authors:
+* [Cubaster](https://github.com/Cubaster)
+* [DawnKai](https://github.com/Dawnkai)
 * Sopczasty
 * Worg
