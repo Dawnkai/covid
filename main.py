@@ -30,6 +30,9 @@ class App(tk.Frame):
         self.StartButton = tk.Button(self.master, text="Start", command=self._generate_cavas)
         self.StartButton.grid(row=2, column=1)
 
+        self.QuitButton = tk.Button(self.master, text="Zamknij", command=self._close_window)
+        self.QuitButton.grid(row=4, columnspan=2)
+
         self.canvas = None
         self.atoms = []
 
@@ -46,6 +49,10 @@ class App(tk.Frame):
         for i in range(self.n):
             atom = Atom(self.r, self.n)
             self.atoms.append({"attributes": atom, "instance": self.canvas.create_oval(atom.rozmiar, fill="blue")})
+    
+    
+    def _close_window(self):
+        self.master.destroy()
 
 
 app = App()
