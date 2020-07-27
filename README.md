@@ -1,6 +1,7 @@
 # Atom Infection Simulator
 
 ### Language : Python
+
 ### GUI : Pygame & Tkinter
 
 Basic simulator for atom collision - based on CoVid pandemic.
