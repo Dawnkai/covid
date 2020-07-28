@@ -1,23 +1,26 @@
 import pygame as game
 import math
+from random import randint, uniform
 
 class Ball:
-    def __init__(self, radius, cord, vel, color, a):
+    def __init__(self, radius, cord, vel):
         self.r = radius
-        self.v = vel
-        self.loc = cord
-        self.angle = a
-        self.color = color
+        self.v = [randint(0, vel), randint(0, vel)]
+        self.loc = [randint(radius, cord[0]-radius), randint(radius, cord[1]-radius)]
+        self.angle = uniform(0, 2*math.pi)
+        self.color = (0, 0, 255)
         self.speed = math.sqrt(self.v[0]**2 + self.v[1]**2)
 
 class Game:
-    def __init__(self):
+    def __init__(self, width, height, atom_no):
         game.init()
-        self.win = game.display.set_mode((800, 600))
+        self.w = width
+        self.h = height
+        self.win = game.display.set_mode((self.w, self.h))
         game.display.set_caption("Kolizje")
         self.running = True
         # 3 testing balls
-        self.atoms = [Ball(10, [400, 200], [10, 0], (255, 0, 0), math.pi/2), Ball(10, [500, 100], [0, 10], (0, 255, 0), math.pi), Ball(10, [650, 500], [10, 10], (0, 0, 255), 7*math.pi/4)]
+        self.atoms = [Ball(10, [self.w, self.h], 15) for i in range(atom_no)]
 
     def _start(self):
         while self.running:
@@ -26,13 +29,14 @@ class Game:
                 if event.type == game.QUIT:
                     self.running = False
 
-            self.win.fill((0, 0, 0))
+            self.win.fill((255, 255, 255))
             for atom in self.atoms:
                 game.draw.circle(self.win, atom.color, (int(atom.loc[0]), int(atom.loc[1])), atom.r)
                 atom.loc[0] += math.sin(atom.angle) * atom.v[0]
                 atom.loc[1] -= math.cos(atom.angle) * atom.v[1]
+                bounce(atom, self.w, self.h)
                 self._colide(atom)
-                game.display.update()
+            game.display.update()
             game.time.delay(100)
         game.quit()
 
@@ -128,7 +132,29 @@ def parallel(A, B):
     # No collision
     return 0
 
+def bounce(A, w, h):
+    """ Bounce Atom from the walls """
+
+    # Use "Exceeding boundaries" section for calculating new direction
+    # http://archive.petercollingridge.co.uk/book/export/html/6
+
+    if A.loc[0] > w - A.r:
+        A.loc[0] = 2 * (w - A.r) - A.loc[0]
+        A.angle = - A.angle
+
+    elif A.loc[0] < A.r:
+        A.loc[0] = 2 * A.r - A.loc[0]
+        A.angle = - A.angle
+
+    if A.loc[1] > h - A.r:
+        A.loc[1] = 2 * (h - A.r) - A.loc[1]
+        A.angle = math.pi - A.angle
+
+    elif A.loc[1] < A.r:
+        A.loc[1] = 2 * A.r - A.loc[1]
+        A.angle = math.pi - A.angle
+
 
 if __name__ == "__main__":
-    app = Game()
+    app = Game(600,600,80)
     app._start()
