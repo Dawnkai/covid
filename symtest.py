@@ -11,6 +11,8 @@ color = {
     "CARRIER": (255, 0, 255)  # Purple in RGB
 }
 
+way_segments =[]
+
 class Color(Enum):
     PURPLE = 3
     RED = 2
@@ -72,9 +74,13 @@ class Atom:
         self.screen = screen
         # Container in which atoms are present
         self.container = container
-        self.main_speed = math.sqrt(self.speed[0]**2 + self.speed[1]**2)
+        self.main_speed = self._calculate_speed()
         self.type = Color.BLUE
 
+    def _calculate_speed(self):
+        """ Calculate atom's velocity  base on x and y velocity components"""
+        ms = math.sqrt(self.speed[0]**2 + self.speed[1]**2)
+        return ms
 
     def draw(self):
         """ Draw atom on screen """
@@ -112,10 +118,12 @@ class Atom:
 class App:
     """ Main application window """
 
-    def __init__(self, radius, velocity, number_of_atoms):
+    def __init__(self, radius, velocity, number_of_atoms, time_coeff):
         """ Generate main game
         :param radius: radius of single atom
         :param number_of_atoms: number of atoms in container
+        :param velocity: maximum velocity of single atom
+        :param time_coeff: time coefficient - M param in task contents
         """
         game.init()
         game.display.set_caption("Atom Collisions")
@@ -129,11 +137,12 @@ class App:
         # Container with atoms
         self.container = Container()
         # Generate atoms
-        self.atoms = [Atom(radius, self.display, self.container, velocity) for i in range(number_of_atoms)]
+        self.atoms = [Atom(radius, self.display, self.container, velocity) for i in range(number_of_atoms+1)]
         self.red_hits = 0
-        self.types = [number_of_atoms - 1, 1, 0]
+        self.types = [number_of_atoms, 1, 0]
         self.ticks_count = 0
-        self.tries = velocity * number_of_atoms * 16
+        self.tries = (velocity * (min(CONTAINER_SIZE[0], CONTAINER_SIZE[1])//self.atoms[0].radius) * time_coeff)//10
+        self.red_ticks = 0
 
     def _start(self):
         """ Start the simulation """
@@ -146,10 +155,13 @@ class App:
             if self.types[0] == 0 or self.tries == 0:
                 print("Red atom hits frequency:", round(self.red_hits/self.ticks_count, 4), "per tick" )
                 print("Healthy:", self.types[0], "Infected:", self.types[1], "Carriers:", self.types[2])
+                print("avg distance between hits:", round(sum(way_segments)/self.red_hits, 3))
                 break
+            self.red_ticks += 1
             self._tick()
             self.tries -= 1
             self.ticks_count += 1
+
 
     def _tick(self):
         """ Frame function - called every frame """
@@ -163,6 +175,7 @@ class App:
         self.clock.tick(60)
 
     def _init_red(self):
+        """"Initialising red atom"""
         self.atoms[0].x = self.atoms[0].radius
         self.atoms[0].y = CONTAINER_SIZE[1] - self.atoms[0].radius
         self.atoms[0].color = color["INFECTED"]
@@ -171,9 +184,28 @@ class App:
 
     # for each atom in self.atoms which is not A check if 2 atoms collide with each other
     def _collide(self, A):
+        """" Atoms collisions + collecting red atom's distance before collision """
         for at in self.atoms:
             if at != A:
                 if collision(A, at):
+                    if A.type == Color.RED:
+                        self.red_hits += 1
+                        way_segments.append(self.red_ticks * A.main_speed)
+                        self.red_ticks = 0
+                        if at.type == Color.BLUE:
+                            at.type = Color.PURPLE
+                            at.color = color["CARRIER"]
+                            self.types[0] -= 1
+                            self.types[2] += 1
+                    elif at.type == Color.RED:
+                        self.red_hits += 1
+                        way_segments.append(self.red_ticks * at.main_speed)
+                        self.red_ticks = 0
+                        if A.type == Color.BLUE:
+                            A.type = Color.PURPLE
+                            A.color = color["CARRIER"]
+                            self.types[0] -= 1
+                            self.types[2] += 1
                     collision_type = parallel(A, at)
                     # A speeds up, B stops
                     if collision_type == Collision.B_SPEED_UP:
@@ -207,31 +239,23 @@ class App:
                         A.speed[1] = at.speed[1]
                         at.speed[1] = 0
                         A.angle, at.angle = at.angle, A.angle
-                    if A.type == Color.RED:
-                        self.red_hits += 1
-                        if at.type == Color.BLUE:
-                            at.type = Color.PURPLE
-                            at.color = color["CARRIER"]
-                            self.types[0] -= 1
-                            self.types[2] += 1
-                    elif at.type == Color.RED:
-                        self.red_hits += 1
-                        if A.type == Color.BLUE:
-                            A.type = Color.PURPLE
-                            A.color = color["CARRIER"]
-                            self.types[0] -= 1
-                            self.types[2] += 1
+                    A.main_speed = A._calculate_speed()
+                    at.main_speed = at._calculate_speed()
+
 
 def distance(A, B):
+    """Calculate distance between 2 atoms"""
     dist = math.sqrt((A.x-B.x)**2 + (A.y-B.y)**2)
     return dist
 
 def collision(A, B):
+    """Check if 2 atoms collides"""
     if distance(A, B) < 21/10*A.radius:
         return True
     return False
 
 def float_compare(a, b):
+    """check affiliation to degree range"""
     d = 0.01  # tolerance of comparison
     if 0 < a < b-d:
         return 1  # (0, 90) degree
@@ -244,7 +268,7 @@ def float_compare(a, b):
 # 0 - no collision, 1- x collide 1-> 2, 2- x collide 2-> 1, 3- y collide 1-> 2, 4- y collide 2-> 1,
 # 5 - x,y collision, 6 - supercollision 1-> 2, 7 - supercollision 2-> 1
 def parallel(A, B):
-
+    """define parallelism between 2 atoms"""
     # the same direction B hits A
     if A.angle == B.angle and B.main_speed > A.main_speed:
         return Collision.B_SPEED_UP
@@ -277,5 +301,5 @@ def parallel(A, B):
 
 
 if __name__ == '__main__':
-    app = App(10, 10, 20)
+    app = App(10, 10, 20, 100)
     app._start()
