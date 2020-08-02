@@ -6,81 +6,84 @@ import math
 from settings import LOGO_IMAGE, BACKGROUND_IMAGE, CONTAINER_SIZE
 from enum import Enum
 
+plot_data = []
+
 class App(tk.Frame):
-    """ Main interface GUI tkinter"""
     def __init__(self):
         self.master = None
         super().__init__(),
         self.n = 0
         self.r = 0
         self.v = 0
+        self.time_coefficient = 0
 
-        # entering atom numbers
         self.AtomNumLabel = tk.Label(self.master, text="Liczba atomów", font=10)
         self.AtomNumLabel.grid(row=0)
         self.AtomNumInput = tk.Entry(self.master)
         self.AtomNumInput.grid(row=0, column=1)
 
-        # entering atom radius
         self.AtomRadLabel = tk.Label(self.master, text="Promień atomu", font=10)
         self.AtomRadLabel.grid(row=1)
         self.AtomRadInput = tk.Entry(self.master)
         self.AtomRadInput.grid(row=1, column=1)
 
-        # entering atom speed
         self.AtomSpeedLabel = tk.Label(self.master, text="Predkosci atomow", font=10)
         self.AtomSpeedLabel.grid(row=2)
         self.AtomSpeedInput = tk.Entry(self.master)
         self.AtomSpeedInput.grid(row=2, column=1)
 
-        # start button
+        self.TimeLabel = tk.Label(self.master, text="Wspolczynnik czasu", font=10)
+        self.TimeLabel.grid(row=3)
+        self.TimeInput = tk.Entry(self.master)
+        self.TimeInput.grid(row=3, column=1)
+
         self.StartButton = tk.Button(self.master,
                                      text="Start",
                                      command=self._generate_frame)
-        self.StartButton.grid(row=3)
+        self.StartButton.grid(row=4)
 
-        #stop button
         self.StopButton = tk.Button(self.master,
                                      text="Stop",
                                      command=self._close_frame)
-        self.StopButton.grid(row=3, column=1)
+        self.StopButton.grid(row=4, column=1)
 
         self.frame = None
         self.app1 = None
 
-        #quit button
         self.QuitButton = tk.Button(self.master,
                                     text="Quit",
                                     command=self._close_window)
-        self.QuitButton.grid(row=5, column=1)
+        self.QuitButton.grid(row=6, column=1)
 
-    # closing application
     def _close_window(self):
+        """Display results of all simulation and quit app"""
         self.app1.running = False
+        print(plot_data)
         self.master.destroy()
 
-    # closing\breaking animation and destroying frame
     def _close_frame(self):
+        """ Press stop button to save simulation results"""
         self.app1.running = False
+        plot_data.append([self.n, self.time_coefficient,self.app1.distance, self.app1.frequency])
         game.quit()
         self.frame.destroy()
 
-    # generate frame and start animation
     def _generate_frame(self):
-        # n- no. of atoms, r - atom radius, v - atom velocity given by user
         self.n = int(self.AtomNumInput.get())
         self.r = int(self.AtomRadInput.get())
         self.v = int(self.AtomSpeedInput.get())
-        # initialising frame
+        self.time_coefficient = int(self.TimeInput.get())
+        """ Scaling atom size to fit window """
+        if self.r * self.n > 600:
+            self.r = max(1,int(600/self.n))
+        """Generate frame for animation"""
         self.frame = tk.Frame(self.master, height=min(self.n * self.r, 600), width=min(self.n * self.r, 600))
-        self.frame.grid(row=4, columnspan=2, padx=10, pady=10)
-        # embedding pygame into tkinter
-        # TODO: check if supported by Linux
+        self.frame.grid(row=5, columnspan=2, padx=10, pady=10)
         os.environ['SDL_WINDOWID'] = str(self.frame.winfo_id())
         os.environ['SDL_VIDEODRIVER'] = 'windib'
-        # start animation
-        self.app1 = App1(self.r, self.v, self.n, 100, self.frame)
+        self.app1 = App1(self.r, self.v, self.n, self.time_coefficient, self.frame)
         self.app1._start()
+
 
 
 # FIXME: Maybe there is a better way to store rgb colors than dict?
@@ -89,7 +92,7 @@ color = {
     "HEALTHY": (0, 0, 255),  # Blue in RGB
     "CARRIER": (255, 0, 255)  # Purple in RGB
 }
-# list to store distance between red atom's hits
+
 way_segments =[]
 
 class Color(Enum):
@@ -200,9 +203,6 @@ class App1:
         """ Generate main game
         :param radius: radius of single atom
         :param number_of_atoms: number of atoms in container
-        :param velocity: maximum velocity of single atom
-        :param time_coeff: time coefficient - M in task contents
-        :param parent: relate to tkinter frame - updating frame
         """
         self.frame = parent
         self.display = game.display.set_mode((radius*number_of_atoms, radius*number_of_atoms))
@@ -218,6 +218,8 @@ class App1:
         self.ticks_count = 0
         self.tries = (velocity * number_of_atoms * time_coeff)//10
         self.red_ticks = 0
+        self.distance = 0
+        self.frequency = 0
 
     def _start(self):
         """ Start the simulation """
@@ -225,6 +227,8 @@ class App1:
         while self.running:
 
             if self.types[0] == 0 or self.tries == 0:
+                self.frequency = round(self.red_hits/self.ticks_count, 4)
+                self.distance = round(sum(way_segments)/self.red_hits, 3)
                 print("Red atom hits frequency:", round(self.red_hits/self.ticks_count, 4), "per tick" )
                 print("Healthy:", self.types[0], "Infected:", self.types[1], "Carriers:", self.types[2])
                 print("avg distance between hits:", round(sum(way_segments)/self.red_hits, 3))
@@ -371,5 +375,5 @@ def parallel(A, B):
 if __name__ =="__main__":
     app = App()
     app.master.title("Atoms collision")
-    app.master.maxsize(650, 770)
+    app.master.maxsize(650, 790)
     app.mainloop()
