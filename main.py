@@ -17,6 +17,8 @@ class App(tk.Frame):
         self.number_of_atoms = 0
         self.radius = 0
         self.velocity = 0
+        self.time_coefficient = 0
+        self.results = []
 
         # Atom numbers input
         self.AtomNumLabel = tk.Label(self.master, text="Liczba atomów", font=10)
@@ -36,23 +38,29 @@ class App(tk.Frame):
         self.AtomVelocityInput = tk.Entry(self.master)
         self.AtomVelocityInput.grid(row=2, column=1)
 
+        # Time coefficient input
+        self.TimeLabel = tk.Label(self.master, text="Wspolczynnik czasu", font=10)
+        self.TimeLabel.grid(row=3)
+        self.TimeInput = tk.Entry(self.master)
+        self.TimeInput.grid(row=3, column=1)
+
         # Simulation start button
         self.StartButton = tk.Button(self.master,
                                      text="Start",
                                      command=self._start_simulation)
-        self.StartButton.grid(row=3)
+        self.StartButton.grid(row=4)
 
         # Close simulation button
         self.StopButton = tk.Button(self.master,
                                      text="Stop",
                                      command=self._close_simulation)
-        self.StopButton.grid(row=3, column=1)
+        self.StopButton.grid(row=4, column=1)
 
         # Quit button
         self.QuitButton = tk.Button(self.master,
                                     text="Quit",
                                     command=self._exit)
-        self.QuitButton.grid(row=5, column=1)
+        self.QuitButton.grid(row=6, column=1)
 
         # Simulation
         self.simulation_window = None
@@ -68,11 +76,14 @@ class App(tk.Frame):
 
     # Exit the program
     def _exit(self):
+        print(self.results)
         sys.exit()
 
 
     # Close the simulation
     def _close_simulation(self):
+        self.results.append([self.number_of_atoms, self.time_coefficient,
+                             self.simulation.result_distance, self.simulation.result_frequency])
         self.simulation._exit()
 
 
@@ -81,15 +92,16 @@ class App(tk.Frame):
         self.number_of_atoms = int(self.AtomNumInput.get())
         self.radius = int(self.AtomRadInput.get())
         self.velocity = int(self.AtomVelocityInput.get())
+        self.time_coefficient = int(self.TimeInput.get())
 
         # Create frame for pygame
         self.simulation_window = tk.Frame(self.master, height=CONTAINER_SIZE[0], width=CONTAINER_SIZE[1])
-        self.simulation_window.grid(row=4, columnspan=2, padx=10, pady=10)
+        self.simulation_window.grid(row=5, columnspan=2, padx=10, pady=10)
 
         # Embed pygame into frame
         os.environ['SDL_WINDOWID'] = str(self.simulation_window.winfo_id())
         # Start simulation
-        self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms, 100)
+        self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms, self.time_coefficient)
         self.simulation._start()
 
 

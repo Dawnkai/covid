@@ -1,5 +1,4 @@
 # Simulation
-import tkinter as tk
 import os
 import pygame as game
 import random
@@ -244,6 +243,16 @@ class Simulation:
         self.duration = (velocity * number_of_atoms * time_coeff)//10
 
 
+    @property
+    def result_frequency(self):
+        return round(self.container.atom_zero_collisions/self.container.total_ticks, 4)
+    
+
+    @property
+    def result_distance(self):
+        return round(sum(self.container.atom_zero_distances)/self.container.atom_zero_collisions, 3)
+
+
     def _start(self):
         """ Start the simulation """
 
@@ -278,4 +287,6 @@ class Simulation:
 
 
     def _exit(self):
-        sys.exit()
+        if self.running == True:
+            self.running = False
+            game.quit()
