@@ -101,7 +101,7 @@ class App(tk.Frame):
         # Embed pygame into frame
         os.environ['SDL_WINDOWID'] = str(self.simulation_window.winfo_id())
         # Start simulation
-        self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms, self.time_coefficient)
+        self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms, self.time_coefficient,self.simulation_window)
         self.simulation._start()
 
 
