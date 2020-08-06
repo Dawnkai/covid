@@ -227,7 +227,8 @@ class Atom:
 class Simulation:
     """ Main application window """
 
-    def __init__(self, radius, velocity, number_of_atoms, time_coeff):
+    def __init__(self, radius, velocity, number_of_atoms, time_coeff, frame):
+
         """ Generate simulation
         :param radius: radius of a single atom
         :param velocity: maximum velocity of single atom
@@ -241,6 +242,8 @@ class Simulation:
         # Container with atoms
         self.container = Container(radius, number_of_atoms, velocity, time_coeff, self.display)
         self.duration = (velocity * number_of_atoms * time_coeff)//10
+        self.frame = frame
+
 
 
     @property
@@ -268,6 +271,7 @@ class Simulation:
                 print("avg distance between hits:", self.container.avg_collision_distance)
                 break
             self._tick()
+            self.frame.update()
             self.duration -= 1
 
 

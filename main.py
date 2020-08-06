@@ -89,10 +89,11 @@ class App(tk.Frame):
 
     # Start simulation in pygame
     def _start_simulation(self):
-        self.number_of_atoms = int(self.AtomNumInput.get())
+        self.number_of_atoms = int(self.AtomNumInput.get()) % 101
         self.radius = int(self.AtomRadInput.get())
         self.velocity = int(self.AtomVelocityInput.get())
         self.time_coefficient = int(self.TimeInput.get())
+        self._scaling()
 
         # Create frame for pygame
         self.simulation_window = tk.Frame(self.master, height=CONTAINER_SIZE[0], width=CONTAINER_SIZE[1])
@@ -101,9 +102,13 @@ class App(tk.Frame):
         # Embed pygame into frame
         os.environ['SDL_WINDOWID'] = str(self.simulation_window.winfo_id())
         # Start simulation
-        self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms, self.time_coefficient)
+        self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms, self.time_coefficient,self.simulation_window)
         self.simulation._start()
 
+    def _scaling(self):
+        scaling_parameter = CONTAINER_SIZE[0] / ( self.radius * self.number_of_atoms)
+        self.radius = max(int(self.radius * scaling_parameter), 3)
+        self.velocity = max(int(self.velocity * scaling_parameter),1)
 
 if __name__ =="__main__":
     app = App()
