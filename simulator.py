@@ -251,7 +251,6 @@ class Simulation:
         self.frame = frame
 
 
-
     @property
     def result_frequency(self):
         return round(self.container.atom_zero_collisions/self.container.total_ticks, 4)
