@@ -1,5 +1,6 @@
 # Main application
 import tkinter as tk
+from tkinter import messagebox
 import os
 import pygame as game
 from simulator import Simulation
@@ -19,6 +20,7 @@ class App(tk.Frame):
         self.velocity = 0
         self.time_coefficient = 0
         self.results = []
+        self.simulation = None
 
         # Atom numbers input
         self.AtomNumLabel = tk.Label(self.master, text="Liczba atomów", font=10)
@@ -60,7 +62,7 @@ class App(tk.Frame):
         self.QuitButton = tk.Button(self.master,
                                     text="Quit",
                                     command=self._exit)
-        self.QuitButton.grid(row=6, column=1)
+        self.QuitButton.grid(row=6, columnspan=2)
 
         # Simulation
         self.simulation_window = None
@@ -82,28 +84,33 @@ class App(tk.Frame):
 
     # Close the simulation
     def _close_simulation(self):
-        self.results.append([self.number_of_atoms, self.time_coefficient,
-                             self.simulation.result_distance, self.simulation.result_frequency])
-        self.simulation._exit()
+        if self.simulation:
+            self.results.append([self.number_of_atoms, self.time_coefficient,
+                                self.simulation.result_distance, self.simulation.result_frequency])
+            self.simulation_window.destroy()
+            self.simulation._exit()
 
 
     # Start simulation in pygame
     def _start_simulation(self):
-        self.number_of_atoms = int(self.AtomNumInput.get()) % 101
+        self.number_of_atoms = int(self.AtomNumInput.get())
         self.radius = int(self.AtomRadInput.get())
         self.velocity = int(self.AtomVelocityInput.get())
         self.time_coefficient = int(self.TimeInput.get())
-        self._scaling()
 
-        # Create frame for pygame
-        self.simulation_window = tk.Frame(self.master, height=CONTAINER_SIZE[0], width=CONTAINER_SIZE[1])
-        self.simulation_window.grid(row=5, columnspan=2, padx=10, pady=10)
+        if self.number_of_atoms <= 100:
+            self._scaling()
+            # Create frame for pygame
+            self.simulation_window = tk.Frame(self.master, height=CONTAINER_SIZE[0], width=CONTAINER_SIZE[1])
+            self.simulation_window.grid(row=5, columnspan=2, padx=10, pady=10)
 
-        # Embed pygame into frame
-        os.environ['SDL_WINDOWID'] = str(self.simulation_window.winfo_id())
-        # Start simulation
-        self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms, self.time_coefficient,self.simulation_window)
-        self.simulation._start()
+            # Embed pygame into frame
+            os.environ['SDL_WINDOWID'] = str(self.simulation_window.winfo_id())
+            # Start simulation
+            self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms, self.time_coefficient,self.simulation_window)
+            self.simulation._start()
+        else:
+            messagebox.showerror("Błąd", "Liczba atomów nie może być większa niż 100.")
 
     def _scaling(self):
         scaling_parameter = CONTAINER_SIZE[0] / ( self.radius * self.number_of_atoms)
