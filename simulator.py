@@ -61,13 +61,19 @@ class Container:
     @property
     def atom_zero_avg_collisions(self):
         """ Return red atom hit frequency """
-        return round(self.atom_zero_collisions/self.total_ticks, 4)
+        try:
+            return round(self.atom_zero_collisions/self.total_ticks, 4)
+        except ZeroDivisionError:
+            return 0
     
 
     @property
     def avg_collision_distance(self):
         """ Average distance between collisions """
-        return round(sum(self.atom_zero_distances)/self.atom_zero_collisions, 3)
+        try:
+            return round(sum(self.atom_zero_distances)/self.atom_zero_collisions, 3)
+        except ZeroDivisionError:
+            return 0
 
 
     @property
@@ -227,7 +233,8 @@ class Atom:
 class Simulation:
     """ Main application window """
 
-    def __init__(self, radius, velocity, number_of_atoms, time_coeff,frame):
+    def __init__(self, radius, velocity, number_of_atoms, time_coeff, frame):
+
         """ Generate simulation
         :param radius: radius of a single atom
         :param velocity: maximum velocity of single atom
@@ -261,13 +268,7 @@ class Simulation:
         self.container._init_atom_zero()
 
         # Main loop
-        while self.running:
-
-            if self.duration == 0:
-                print("Red atom hits frequency:", self.container.atom_zero_avg_collisions, "per tick" )
-                print("Healthy:", self.container.num_healthy, "Infected:", self.container.num_infected)
-                print("avg distance between hits:", self.container.avg_collision_distance)
-                break
+        while self.running and self.duration != 0:
             self._tick()
             self.frame.update()
             self.duration -= 1
