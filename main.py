@@ -3,6 +3,7 @@ import tkinter as tk
 import os
 import pygame as game
 from simulator import Simulation
+from plot import Plot
 import platform
 import sys
 from settings import DISPLAY_SIZE, CONTAINER_SIZE
@@ -18,7 +19,7 @@ class App(tk.Frame):
         self.radius = 0
         self.velocity = 0
         self.time_coefficient = 0
-        self.results = []
+        self.results = [[], [], [], []]
 
         # Atom numbers input
         self.AtomNumLabel = tk.Label(self.master, text="Liczba atomów", font=10)
@@ -56,6 +57,12 @@ class App(tk.Frame):
                                      command=self._close_simulation)
         self.StopButton.grid(row=4, column=1)
 
+        # Draw plot button
+        self.DrawPlotButton = tk.Button(self.master,
+                                  text='Draw Plot',
+                                  command=self._display_plot)
+        self.DrawPlotButton.grid(row=5, column=1)
+
         # Quit button
         self.QuitButton = tk.Button(self.master,
                                     text="Quit",
@@ -66,6 +73,11 @@ class App(tk.Frame):
         self.simulation_window = None
         self.simulation = None
 
+        # Plot
+        self.plot_distance_window = None
+        self.plot_frequency_window = None
+        self.plot_distance = None
+        self.plot_frequency = None
 
     def _sanity_check(self):
         if platform.system() == 'Windows':
@@ -82,8 +94,10 @@ class App(tk.Frame):
 
     # Close the simulation
     def _close_simulation(self):
-        self.results.append([self.number_of_atoms, self.time_coefficient,
-                             self.simulation.result_distance, self.simulation.result_frequency])
+        self.results[0].append(self.number_of_atoms)
+        self.results[1].append(self.time_coefficient)
+        self.results[2].append(self.simulation.result_distance)
+        self.results[3].append(self.simulation.result_frequency)
         self.simulation._exit()
 
 
@@ -96,13 +110,24 @@ class App(tk.Frame):
 
         # Create frame for pygame
         self.simulation_window = tk.Frame(self.master, height=CONTAINER_SIZE[0], width=CONTAINER_SIZE[1])
-        self.simulation_window.grid(row=5, columnspan=2, padx=10, pady=10)
+        self.simulation_window.grid(row=7, columnspan=2, padx=10, pady=10)
 
         # Embed pygame into frame
         os.environ['SDL_WINDOWID'] = str(self.simulation_window.winfo_id())
         # Start simulation
-        self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms, self.time_coefficient,self.simulation_window)
+        self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms,
+                                     self.time_coefficient, self.simulation_window)
         self.simulation._start()
+
+    def _display_plot(self):
+        # Create class objects for plots
+        # Use generate_plot() method for displaying
+        self.plot_distance = Plot(self.results[0], self.results[1],
+                                  self.results[2], 'Distance')
+        self.plot_distance.generate_plot()
+        self.plot_frequency = Plot(self.results[0], self.results[1],
+                                  self.results[3], 'Frequency')
+        self.plot_frequency.generate_plot()
 
 
 if __name__ =="__main__":

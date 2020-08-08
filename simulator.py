@@ -227,7 +227,7 @@ class Atom:
 class Simulation:
     """ Main application window """
 
-    def __init__(self, radius, velocity, number_of_atoms, time_coeff,frame):
+    def __init__(self, radius, velocity, number_of_atoms, time_coeff, frame):
         """ Generate simulation
         :param radius: radius of a single atom
         :param velocity: maximum velocity of single atom
