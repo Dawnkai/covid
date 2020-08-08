@@ -126,7 +126,7 @@ class App(tk.Frame):
                                   self.results[2], 'Distance')
         self.plot_distance.generate_plot()
         self.plot_frequency = Plot(self.results[0], self.results[1],
-                                  self.results[3], 'Frequency')
+                                   self.results[3], 'Frequency')
         self.plot_frequency.generate_plot()
 
 
