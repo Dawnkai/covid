@@ -5,7 +5,6 @@ import os
 import pygame as game
 from simulator import Simulation
 from plot import Plot
-import platform
 import sys
 from settings import DISPLAY_SIZE, CONTAINER_SIZE
 
@@ -83,7 +82,7 @@ class App(tk.Frame):
 
     def _sanity_check(self):
         """Workaround for Windows."""
-        if platform.system() == "Windows":
+        if os.name == "nt":
             os.environ["SDL_VIDEODRIVER"] = "windib"
         else:
             game.init()
@@ -120,7 +119,7 @@ class App(tk.Frame):
 
             # Embed pygame into frame
             # FIXME: Broken on Linux
-            if platform.system == "Windows":
+            if os.name == "nt":
                 os.environ["SDL_WINDOWID"] = str(self.simulation_window.winfo_id())
             # Start simulation
             self.simulation = Simulation(
