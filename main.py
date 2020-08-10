@@ -69,7 +69,7 @@ class App(tk.Frame):
         self.QuitButton = tk.Button(self.master,
                                     text="Quit",
                                     command=self._exit)
-        self.QuitButton.grid(row=6, column=1)
+        self.QuitButton.grid(row=6, columnspan=2)
 
         # Simulation
         self.simulation_window = None
