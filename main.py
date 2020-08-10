@@ -1,5 +1,6 @@
 # Main application
 import tkinter as tk
+from tkinter import messagebox
 import os
 import pygame as game
 from simulator import Simulation
@@ -20,6 +21,7 @@ class App(tk.Frame):
         self.velocity = 0
         self.time_coefficient = 0
         self.results = [[], [], [], []]
+        self.simulation = None
 
         # Atom numbers input
         self.AtomNumLabel = tk.Label(self.master, text="Liczba atomów", font=10)
@@ -61,7 +63,7 @@ class App(tk.Frame):
         self.DrawPlotButton = tk.Button(self.master,
                                   text='Draw Plot',
                                   command=self._display_plot)
-        self.DrawPlotButton.grid(row=5, column=1)
+        self.DrawPlotButton.grid(row=6)
 
         # Quit button
         self.QuitButton = tk.Button(self.master,
@@ -94,11 +96,13 @@ class App(tk.Frame):
 
     # Close the simulation
     def _close_simulation(self):
-        self.results[0].append(self.number_of_atoms)
-        self.results[1].append(self.time_coefficient)
-        self.results[2].append(self.simulation.result_distance)
-        self.results[3].append(self.simulation.result_frequency)
-        self.simulation._exit()
+        if self.simulation:
+            self.results[0].append(self.number_of_atoms)
+            self.results[1].append(self.time_coefficient)
+            self.results[2].append(self.simulation.result_distance)
+            self.results[3].append(self.simulation.result_frequency)
+            self.simulation_window.destroy()
+            self.simulation._exit()
 
 
     # Start simulation in pygame
@@ -108,27 +112,32 @@ class App(tk.Frame):
         self.velocity = int(self.AtomVelocityInput.get())
         self.time_coefficient = int(self.TimeInput.get())
 
-        # Create frame for pygame
-        self.simulation_window = tk.Frame(self.master, height=CONTAINER_SIZE[0], width=CONTAINER_SIZE[1])
-        self.simulation_window.grid(row=7, columnspan=2, padx=10, pady=10)
+        if self.number_of_atoms <= 100:
+            self._scaling()
+            # Create frame for pygame
+            self.simulation_window = tk.Frame(self.master, height=CONTAINER_SIZE[0], width=CONTAINER_SIZE[1])
+            self.simulation_window.grid(row=5, columnspan=2, padx=10, pady=10)
 
-        # Embed pygame into frame
-        os.environ['SDL_WINDOWID'] = str(self.simulation_window.winfo_id())
-        # Start simulation
-        self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms,
-                                     self.time_coefficient, self.simulation_window)
-        self.simulation._start()
+            # Embed pygame into frame
+            os.environ['SDL_WINDOWID'] = str(self.simulation_window.winfo_id())
+            # Start simulation
+            self.simulation = Simulation(self.radius, self.velocity, self.number_of_atoms, self.time_coefficient,
+                                         self.simulation_window)
+            self.simulation._start()
+        else:
+            messagebox.showerror("Błąd", "Liczba atomów nie może być większa niż 100.")
 
     def _display_plot(self):
         # Create class objects for plots
         # Use generate_plot() method for displaying
         self.plot_distance = Plot(self.results[0], self.results[1],
-                                  self.results[2], 'Distance')
+                                  self.results[2], self.results[3])
         self.plot_distance.generate_plot()
-        self.plot_frequency = Plot(self.results[0], self.results[1],
-                                   self.results[3], 'Frequency')
-        self.plot_frequency.generate_plot()
 
+    def _scaling(self):
+        scaling_parameter = CONTAINER_SIZE[0] / (self.radius * self.number_of_atoms)
+        self.radius = max(int(self.radius * scaling_parameter), 3)
+        self.velocity = max(int(self.velocity * scaling_parameter), 1)
 
 if __name__ =="__main__":
     app = App()
