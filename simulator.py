@@ -6,7 +6,7 @@ import math
 from settings import LOGO_IMAGE, BACKGROUND_IMAGE, CONTAINER_SIZE, TICK_FRAMES
 from enum import Enum
 import sys
-from utils import calculate_distance, check_collision, float_compare
+from utils import calculate_distance, check_collision
 
 
 # FIXME: Maybe there is a better way to store rgb colors than dict?

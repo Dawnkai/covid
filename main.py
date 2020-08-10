@@ -64,11 +64,11 @@ class App(tk.Frame):
         self.DrawPlotButton = tk.Button(
             self.master, text="Draw Plot", command=self._display_plot
         )
-        self.DrawPlotButton.grid(row=6)
+        self.DrawPlotButton.grid(row=6, columnspan=2)
 
         # Quit button
         self.QuitButton = tk.Button(self.master, text="Quit", command=self._exit)
-        self.QuitButton.grid(row=6, columnspan=2)
+        self.QuitButton.grid(row=7, columnspan=2)
 
         # Simulation
         self.simulation_window = None
@@ -79,6 +79,7 @@ class App(tk.Frame):
         self.plot_frequency_window = None
         self.plot_distance = None
         self.plot_frequency = None
+        self.plot_window = None
 
     def _sanity_check(self):
         """Workaround for Windows."""
@@ -118,7 +119,9 @@ class App(tk.Frame):
             self.simulation_window.grid(row=5, columnspan=2, padx=10, pady=10)
 
             # Embed pygame into frame
-            os.environ["SDL_WINDOWID"] = str(self.simulation_window.winfo_id())
+            # FIXME: Broken on Linux
+            if platform.system == "Windows":
+                os.environ["SDL_WINDOWID"] = str(self.simulation_window.winfo_id())
             # Start simulation
             self.simulation = Simulation(
                 self.radius,
@@ -133,10 +136,8 @@ class App(tk.Frame):
 
     def _display_plot(self):
         """Display results as plot"""
-        self.plot_distance = Plot(
-            self.results[0], self.results[1], self.results[2], self.results[3]
-        )
-        self.plot_distance.generate_plot()
+        self.plot_window = Plot(self.results)
+        self.plot_window.generate_plot()
 
     def _scaling(self):
         """Scale atom radius and velocity based on display size and number of atoms"""
