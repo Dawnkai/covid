@@ -13,15 +13,16 @@ from utils import calculate_distance, check_collision, float_compare
 color = {
     "INFECTED": (255, 0, 0),  # Red in RGB
     "HEALTHY": (0, 0, 255),  # Blue in RGB
-    "CARRIER": (255, 0, 255)  # Purple in RGB
+    "CARRIER": (255, 0, 255),  # Purple in RGB
 }
 
 
 class Container:
-    """ Main container used for simulations """
+    """Main container used for simulations."""
 
     def __init__(self, radius, number_of_atoms, velocity, time_coeff, display):
-        """ Generate new container
+        """Generate new container.
+
         :param radius: radius of single atom
         :param number_of_atoms: number of atoms in container
         :param velocity: maximum velocity of single atom
@@ -35,7 +36,10 @@ class Container:
         # Scale background image to fit container size
         self.image = game.transform.scale(self.image, self.size)
         # Generate atoms
-        self.atoms = [Atom(radius, self.display, self.size, velocity) for i in range(number_of_atoms+1)]
+        self.atoms = [
+            Atom(radius, self.display, self.size, velocity)
+            for i in range(number_of_atoms + 1)
+        ]
         # Total ticks since start of the simulation
         self.total_ticks = 0
         self.atom_zero_collisions = 0
@@ -44,62 +48,56 @@ class Container:
         self.display = display
         # Distance travelled by atom zero between collisions
         self.atom_zero_distances = []
-    
 
     @property
     def num_healthy(self):
-        """ Return number of healthy atoms """
-        return len([atom for atom in self.atoms[1:] if atom.type == 'HEALTHY'])
-    
+        """Return number of healthy atoms."""
+        return len([atom for atom in self.atoms[1:] if atom.type == "HEALTHY"])
 
     @property
     def num_infected(self):
-        """ Return number of infected atoms """
-        return len([atom for atom in self.atoms[1:] if atom.type == 'INFECTED'])
-    
+        """Return number of infected atoms."""
+        return len([atom for atom in self.atoms[1:] if atom.type == "INFECTED"])
 
     @property
     def atom_zero_avg_collisions(self):
-        """ Return red atom hit frequency """
+        """Return red atom hit frequency."""
         try:
-            return round(self.atom_zero_collisions/self.total_ticks, 4)
+            return round(self.atom_zero_collisions / self.total_ticks, 4)
         except ZeroDivisionError:
             return 0
-    
 
     @property
     def avg_collision_distance(self):
-        """ Average distance between collisions """
+        """Average distance between collisions."""
         try:
-            return round(sum(self.atom_zero_distances)/self.atom_zero_collisions, 3)
+            return round(sum(self.atom_zero_distances) / self.atom_zero_collisions, 3)
         except ZeroDivisionError:
             return 0
 
-
     @property
     def borders(self):
-        """ Automatically calculate container borders.
+        """Automatically calculate container borders.
+
         :return: dict with borders
         """
         return {
             "left": self.position[0],
             "right": self.position[0] + self.size[0],
             "up": self.position[1],
-            "down": self.position[1] + self.size[1]
+            "down": self.position[1] + self.size[1],
         }
-    
 
     def _init_atom_zero(self):
-        """ Create arom zero at (0,0) coordinates that will spread the virus """
+        """Create arom zero at (0,0) coordinates that will spread the virus."""
         self.atoms[0].x = self.atoms[0].radius
         self.atoms[0].y = self.borders["down"] - self.atoms[0].radius
         self.atoms[0].color = color["INFECTED"]
-        self.atoms[0].angle = 5*math.pi/4
-        self.atoms[0].type = 'ZERO'
-    
+        self.atoms[0].angle = 5 * math.pi / 4
+        self.atoms[0].type = "ZERO"
 
     def _update(self):
-        """ Update simulation - function called every frame """
+        """Update simulation - function called every frame."""
         for atom in self.atoms:
             atom.move()
             self._check_for_collisions()
@@ -107,9 +105,9 @@ class Container:
         self.ticks_between_collisions += 1
         self.total_ticks += 1
 
-
     def _collide(self, atom_A, atom_B):
-        """ Function that calculates new angles and speeds for collided particles
+        """Function that calculates new angles and speeds for collided particles.
+
         :param atom_A: first atom
         :param atom_B: second atom
         """
@@ -135,27 +133,32 @@ class Container:
         atom_B.x -= math.sin(angle)
         atom_B.y += math.cos(angle)
 
-
     def _check_for_collisions(self):
-        """ Check if any atoms have collided """
+        """Check if any atoms have collided."""
         for atom_A in self.atoms:
             for atom_B in self.atoms:
                 if atom_A != atom_B:
                     if check_collision(atom_A, atom_B):
 
-                        if atom_A.type == 'ZERO' or atom_B == 'ZERO':
+                        if atom_A.type == "ZERO" or atom_B == "ZERO":
                             self.atom_zero_collisions += 1
 
-                            if atom_A.type == 'ZERO' and atom_B.type == 'HEALTHY':
-                                atom_B.type = 'INFECTED'
+                            if atom_A.type == "ZERO" and atom_B.type == "HEALTHY":
+                                atom_B.type = "INFECTED"
                                 atom_B.color = color["CARRIER"]
-                                self.atom_zero_distances.append(self.ticks_between_collisions * atom_A.velocity_vector)
-                            
-                            elif atom_A.type == 'HEALTHY' and atom_B.type == 'ZERO':
-                                atom_A.type = 'INFECTED'
+                                self.atom_zero_distances.append(
+                                    self.ticks_between_collisions
+                                    * atom_A.velocity_vector
+                                )
+
+                            elif atom_A.type == "HEALTHY" and atom_B.type == "ZERO":
+                                atom_A.type = "INFECTED"
                                 atom_A.color = color["CARRIER"]
-                                self.atom_zero_distances.append(self.ticks_between_collisions * atom_B.velocity_vector)
-                            
+                                self.atom_zero_distances.append(
+                                    self.ticks_between_collisions
+                                    * atom_B.velocity_vector
+                                )
+
                             # If atom zero collided, reset tick between collisions counter
                             self.ticks_between_collisions = 0
 
@@ -166,7 +169,8 @@ class Atom:
     """ Class representing single atom """
 
     def __init__(self, radius, screen, container_size, velocity):
-        """ Generate atom
+        """Generate atom.
+
         :param radius: radius of an atom
         :param screen: reference to simulator display
         :param container_size: size of the simulaiton container
@@ -178,7 +182,7 @@ class Atom:
         self.y = random.randint(radius, container_size[1] - radius)
 
         self.radius = radius
-        self.color = color['HEALTHY']
+        self.color = color["HEALTHY"]
         self.thickness = 1
         self.speed = [random.randint(0, velocity), random.randint(0, velocity)]
         self.angle = random.uniform(0, math.pi * 2)
@@ -186,33 +190,36 @@ class Atom:
         self.screen = screen
         # Container in which atoms are present
         self.container_size = container_size
-        self.type = 'HEALTHY'
-
+        self.type = "HEALTHY"
 
     @property
     def velocity_vector(self):
-        """ Calculate resultant velocity """
-        return math.sqrt(self.speed[0]**2 + self.speed[1]**2)
-
+        """Calculate resultant velocity."""
+        return math.sqrt(self.speed[0] ** 2 + self.speed[1] ** 2)
 
     def draw(self):
-        """ Draw atom on screen """
-        game.draw.circle(self.screen, self.color, (int(self.x), int(self.y)), self.radius, self.thickness)
-
+        """Draw atom on screen."""
+        game.draw.circle(
+            self.screen,
+            self.color,
+            (int(self.x), int(self.y)),
+            self.radius,
+            self.thickness,
+        )
 
     def bounce(self):
-        """ Bounce Atom from the walls """
+        """Bounce Atom from the walls."""
 
         # Use "Exceeding boundaries" section for calculating new direction
         # http://archive.petercollingridge.co.uk/book/export/html/6
 
         if self.x > self.container_size[0] - self.radius:
             self.x = 2 * (self.container_size[0] - self.radius) - self.x
-            self.angle = - self.angle
+            self.angle = -self.angle
 
         elif self.x < self.radius:
             self.x = 2 * self.radius - self.x
-            self.angle = - self.angle
+            self.angle = -self.angle
 
         if self.y > self.container_size[1] - self.radius:
             self.y = 2 * (self.container_size[1] - self.radius) - self.y
@@ -222,9 +229,8 @@ class Atom:
             self.y = 2 * self.radius - self.y
             self.angle = math.pi - self.angle
 
-
     def move(self):
-        """ Move Atom by one frame """
+        """Move Atom by one frame."""
         self.x += math.sin(self.angle) * self.speed[0]
         self.y -= math.cos(self.angle) * self.speed[1]
         self.bounce()
@@ -234,11 +240,8 @@ class Simulation:
     """ Main application window """
 
     def __init__(self, radius, velocity, number_of_atoms, time_coeff, frame):
-<<<<<<< HEAD
-=======
+        """Generate simulation.
 
->>>>>>> b7c1c39bcf5957a50299b3c27aace2e9fcaeb1a4
-        """ Generate simulation
         :param radius: radius of a single atom
         :param velocity: maximum velocity of single atom
         :param number_of_atoms: number of atoms in container
@@ -249,23 +252,28 @@ class Simulation:
         # FPS clock
         self.clock = game.time.Clock()
         # Container with atoms
-        self.container = Container(radius, number_of_atoms, velocity, time_coeff, self.display)
-        self.duration = (velocity * number_of_atoms * time_coeff)//10
+        self.container = Container(
+            radius, number_of_atoms, velocity, time_coeff, self.display
+        )
+        self.duration = (velocity * number_of_atoms * time_coeff) // 10
         self.frame = frame
-
 
     @property
     def result_frequency(self):
-        return round(self.container.atom_zero_collisions/self.container.total_ticks, 4)
-    
+        return round(
+            self.container.atom_zero_collisions / self.container.total_ticks, 4
+        )
 
     @property
     def result_distance(self):
-        return round(sum(self.container.atom_zero_distances)/self.container.atom_zero_collisions, 3)
-
+        return round(
+            sum(self.container.atom_zero_distances)
+            / self.container.atom_zero_collisions,
+            3,
+        )
 
     def _start(self):
-        """ Start the simulation """
+        """Start the simulation."""
 
         # Create first infected atom
         self.container._init_atom_zero()
@@ -276,21 +284,19 @@ class Simulation:
             self.frame.update()
             self.duration -= 1
 
-
     def _tick(self):
-        """ Frame function - called every frame """
+        """Frame function - called every frame."""
         # Draw container
         self.display.blit(self.container.image, self.container.position)
 
         # Update container
         self.container._update()
-        
+
         # Update windows
         game.display.flip()
 
         # Tick frame, increasing tick will result in faster simulation
         self.clock.tick(TICK_FRAMES)
-
 
     def _exit(self):
         if self.running == True:

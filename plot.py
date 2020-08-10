@@ -6,8 +6,9 @@ import tkinter as tk
 
 
 class Plot:
+    """Plots displaying results of the simulation."""
     def __init__(self, xs, ys, zs1, zs2):
-        # Creating figure and tbd plot.
+        # Creating figure
         self.figure = figure()
         self.plot = None
 
@@ -18,23 +19,24 @@ class Plot:
         self.zs2 = zs2
 
         # Setting figure title
-        self.figure.canvas.set_window_title('Plots')
+        self.figure.canvas.set_window_title("Plots")
 
     def generate_plot(self):
+        """Generate plot."""
         # Adding distance subplot
-        self.plot = self.figure.add_subplot(121, projection='3d')
-        self.plot.set_title('Distance Plot')
-        self.plot.set_xlabel('Number of Atoms')
-        self.plot.set_ylabel('Time coefficient')
-        self.plot.set_zlabel('Distance')
-        self.plot.scatter(self.xs, self.ys, self.zs1, marker = 'o')
+        self.plot = self.figure.add_subplot(121, projection="3d")
+        self.plot.set_title("Distance Plot")
+        self.plot.set_xlabel("Number of Atoms")
+        self.plot.set_ylabel("Time coefficient")
+        self.plot.set_zlabel("Distance")
+        self.plot.scatter(self.xs, self.ys, self.zs1, marker="o")
 
         # Adding frequency subplot
-        self.plot = self.figure.add_subplot(122, projection='3d')
-        self.plot.set_title('Frequency Plot')
-        self.plot.set_xlabel('Number of Atoms')
-        self.plot.set_ylabel('Time coefficient')
-        self.plot.set_zlabel('Frequency')
+        self.plot = self.figure.add_subplot(122, projection="3d")
+        self.plot.set_title("Frequency Plot")
+        self.plot.set_xlabel("Number of Atoms")
+        self.plot.set_ylabel("Time coefficient")
+        self.plot.set_zlabel("Frequency")
         self.plot.scatter(self.xs, self.ys, self.zs2)
 
         self.figure.tight_layout(pad=2)
